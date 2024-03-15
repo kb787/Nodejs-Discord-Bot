@@ -7,7 +7,11 @@ const client = new Client({
   ],
 });
 const dotenv = require("dotenv");
-const  handleTextQuery  = require("./textQueryController");
+// const handleTextQuery = require("./textQueryController");
+const {
+  handleHeadlineNewsQuery,
+  handleCompleteNewsQuery,
+} = require("./newsQueryController");
 
 dotenv.config();
 
@@ -39,10 +43,75 @@ client.on("messageCreate", (message) => {
       content:
         "Karan Bhanushali is a Software Developer and B.E Computer Science student from University of Mumbai.He holdes an experise in Full Stack Development :- (HTML5,CSS3,Javascript,React.js,Tailwind.css,Bootstrap,Next.js) in frontend development and (Node.js,MongoDB,Postman-API,Docker,Kubernetes) in Backend Development. Also builds mobile application with React-Native",
     });
-  } else {
-    const replyAnswer = handleTextQuery(message.content);
+  }
+  // }
+  else if (
+    message.content.toLowerCase() === "tell me news headlines" ||
+    message.content.includes("news headlines")
+  ) {
     message.reply({
-      replyAnswer,
+      content: "Please enter the domain you want news headlines",
+    });
+
+    const filter = (m) => m.author.id === message.author.id;
+    const collector = message.channel.createMessageCollector({
+      filter,
+      max: 1,
+      time: 60000,
+    });
+
+    collector.on("collect", async (m) => {
+      // const input = m.content.split(",");
+      // const userTopic = input[0].trim();
+      // const userDomain = input[1].trim();
+
+      const input = m.content;
+
+      try {
+        const headlineResponse = await handleHeadlineNewsQuery(input);
+        message.reply({ content: JSON.stringify(headlineResponse) });
+      } catch (error) {
+        const errorMessage = `Unable to process your request due to error ${error}`;
+        message.reply({ content: JSON.stringify(errorMessage) });
+      }
+    });
+
+    collector.on("end", (collected) => {
+      if (collected.size === 0) {
+        message.reply("You didn't provide domain in time.");
+      }
+    });
+  } else if (message.content.toLowerCase() === "tell me complete news") {
+    message.reply({
+      content: "Type the domain in time",
+    });
+    const filter = (m) => m.author.id === message.author.id;
+    const collector = message.channel.createMessageCollector({
+      filter,
+      max: 1,
+      time: 60000,
+    });
+
+    collector.on("collect", async (m) => {
+      // const input = m.content.split(",");
+      // const userTopic = input[0].trim();
+      // const userDomain = input[1].trim();
+
+      const input = m.content;
+
+      try {
+        const headlineResponse = await handleHeadlineNewsQuery(input);
+        message.reply({ content: JSON.stringify(headlineResponse) });
+      } catch (error) {
+        const errorMessage = `Unable to process your request due to error ${error}`;
+        message.reply({ content: JSON.stringify(errorMessage) });
+      }
+    });
+
+    collector.on("end", (collected) => {
+      if (collected.size === 0) {
+        message.reply("You didn't provide the domain name in time.");
+      }
     });
   }
 

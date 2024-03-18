@@ -13,6 +13,14 @@ const {
   handleCompleteNewsQuery,
 } = require("./newsQueryController");
 
+const handleJokeRequest = require("./jokesHandlingController");
+
+const handleDisplayDateTime = () => {
+  const date = new Date();
+  const result = `The date is ${date.getFullYear()}-${date.getMonth()}-${date.getDate()}  and time is ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+  return result;
+};
+
 dotenv.config();
 
 client.on("ready", () => {
@@ -38,6 +46,20 @@ client.on("messageCreate", (message) => {
       content:
         "I am a nodejs bot created by Mr.Karan Bhanushali a Software Developer in Mumbai",
     });
+  } else if (message.content.toLowerCase() === "what task you can perform") {
+    message.reply({
+      content:
+        "I can perform task like giving you news headlines, complete news , jokes, and answers to your general questions",
+    });
+  } else if (
+    message.content.toLowerCase() === "tell me current date and time"
+  ) {
+    const output = handleDisplayDateTime();
+    {
+      message.reply({
+        content: output,
+      });
+    }
   } else if (message.content.toLowerCase() === "tell more about your creator") {
     message.reply({
       content:
@@ -61,10 +83,6 @@ client.on("messageCreate", (message) => {
     });
 
     collector.on("collect", async (m) => {
-      // const input = m.content.split(",");
-      // const userTopic = input[0].trim();
-      // const userDomain = input[1].trim();
-
       const input = m.content;
 
       try {
@@ -81,9 +99,21 @@ client.on("messageCreate", (message) => {
         message.reply("You didn't provide domain in time.");
       }
     });
+  } else if (message.content.toLowerCase() === "tell me a joke") {
+    handleJokeRequest()
+      .then((joke) => {
+        if (joke) {
+          message.reply({ content: joke.toString() });
+        } else {
+          message.reply({ content: "Unable to fetch a joke." });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   } else if (message.content.toLowerCase() === "tell me complete news") {
     message.reply({
-      content: "Type the domain in time",
+      content: "Type the domain you want news",
     });
     const filter = (m) => m.author.id === message.author.id;
     const collector = message.channel.createMessageCollector({
@@ -100,7 +130,7 @@ client.on("messageCreate", (message) => {
       const input = m.content;
 
       try {
-        const headlineResponse = await handleHeadlineNewsQuery(input);
+        const headlineResponse = await handleCompleteNewsQuery(input);
         message.reply({ content: JSON.stringify(headlineResponse) });
       } catch (error) {
         const errorMessage = `Unable to process your request due to error ${error}`;

@@ -6,8 +6,6 @@ const newsapi = new NewsAPI(process.env.news_api_key);
 const handleHeadlineNewsQuery = async (userDomain) => {
   try {
     const headlineResponse = await newsapi.v2.topHeadlines({
-      // sources: "bbc-news,the-verge",
-      // q: userTopic,
       category: userDomain,
       language: "en",
     });
@@ -27,8 +25,6 @@ const handleHeadlineNewsQuery = async (userDomain) => {
 const handleCompleteNewsQuery = async (userDomain) => {
   try {
     const newsResponse = await newsapi.v2.everything({
-      //   q: userTopic,
-      //   sources: "bbc-news,the-verge",
       domains: userDomain,
       from: Date.now() - 2,
       to: Date.now() - 1,
